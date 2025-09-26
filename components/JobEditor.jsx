@@ -2,21 +2,37 @@
 
 import { useState } from "react";
 
-export function JobEditor({ jobs, setJobs }) {
+export function JobEditor({ jobs, onAdd, onRemove }) {
   const [name, setName] = useState("");
   const [time, setTime] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const add = () => {
-    if (!name.trim()) return;
-    setJobs([...(jobs || []), { name: name.trim(), time: time.trim() }]);
-    setName("");
-    setTime("");
+  const add = async () => {
+    if (!name.trim() || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      await onAdd({ name: name.trim(), startTime: time.trim() });
+      setName("");
+      setTime("");
+    } catch (error) {
+      console.error("Failed to add job:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const remove = (idx) => {
-    const next = [...jobs];
-    next.splice(idx, 1);
-    setJobs(next);
+  const remove = async (jobId) => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      await onRemove(jobId);
+    } catch (error) {
+      console.error("Failed to remove job:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -34,6 +50,7 @@ export function JobEditor({ jobs, setJobs }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyPress={handleKeyPress}
+          disabled={isLoading}
         />
         <input
           className="rounded-xl border p-2"
@@ -41,38 +58,41 @@ export function JobEditor({ jobs, setJobs }) {
           value={time}
           onChange={(e) => setTime(e.target.value)}
           onKeyPress={handleKeyPress}
+          disabled={isLoading}
         />
         <button
           type="button"
-          className="rounded-xl border px-4 py-2 hover:bg-gray-50 transition-colors"
+          className="rounded-xl border px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={add}
+          disabled={isLoading}
         >
-          Add job
+          {isLoading ? "Adding..." : "Add job"}
         </button>
       </div>
       <div className="divide-y rounded-xl border">
         {(jobs || []).length === 0 ? (
           <div className="p-3 text-sm opacity-75">No jobs yet.</div>
         ) : (
-          jobs.map((j, i) => (
+          jobs.map((j) => (
             <div
-              key={`job-${j.name}-${i}`}
+              key={j.id || `job-${j.name}`}
               className="flex items-center justify-between p-3"
             >
               <div>
                 <div className="text-sm font-medium">
                   {j.name || "(untitled)"}
                 </div>
-                {j.time && (
-                  <div className="text-xs opacity-75">Start: {j.time}</div>
+                {j.startTime && (
+                  <div className="text-xs opacity-75">Start: {j.startTime}</div>
                 )}
               </div>
               <button
                 type="button"
-                className="text-xs text-red-600 hover:text-red-800 transition-colors"
-                onClick={() => remove(i)}
+                className="text-xs text-red-600 hover:text-red-800 transition-colors disabled:opacity-50"
+                onClick={() => remove(j.id)}
+                disabled={isLoading}
               >
-                Remove
+                {isLoading ? "..." : "Remove"}
               </button>
             </div>
           ))

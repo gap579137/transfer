@@ -16,16 +16,15 @@ datasource db {
 model TransferSession {
   id           String    @id @default(cuid())
   name         String?   // Optional session name
-  startTime    DateTime?
-  currentTime  DateTime?
+  startTime    DateTime? // Static start time that doesn't change
   lastUpdated  DateTime?
-  percentManual Float?   // Manual percentage override
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   
   // Relationships
-  snapshots    Snapshot[]
-  jobs         Job[]
+  snapshots       Snapshot[]
+  snapshotHistory SnapshotHistory[]
+  jobs            Job[]
   
   @@map("transfer_sessions")
 }
@@ -34,15 +33,32 @@ model Snapshot {
   id        String   @id @default(cuid())
   sessionId String
   name      String   // "A" or "B" or custom name
-  total     Float
-  free      Float
-  used      Float
+  total     Float    // Total space in TB
+  free      Float    // Free space in TB  
+  used      Float    // Used space in TB
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   
   // Relationships
   session   TransferSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   
   @@map("snapshots")
+}
+
+// Track all snapshot updates for transfer speed calculation
+model SnapshotHistory {
+  id          String   @id @default(cuid())
+  sessionId   String
+  snapshotName String  // "A" or "B"
+  total       Float    // Total space in TB
+  free        Float    // Free space in TB
+  used        Float    // Used space in TB
+  createdAt   DateTime @default(now())
+  
+  // Relationships  
+  session     TransferSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@map("snapshot_history")
 }
 
 model Job {

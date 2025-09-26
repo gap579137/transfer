@@ -1,59 +1,46 @@
-import { fromLocalDateTimeValue } from "./dateUtils.js";
-
 export function calculatePercentFromSnapshots(snap1, snap2) {
-  const t = Number(snap1.total) || 0;
-  const u1 = Number(snap1.used) || 0;
-  const u2 = Number(snap2.used) || 0;
-  if (t <= 0) return null;
-  const delta = Math.max(0, u1 - u2);
-  const pct = (delta / t) * 100;
-  if (!Number.isFinite(pct) || pct <= 0) return null;
+  const u1 = Number(snap1.used) || 0; // Used space on A (TB)
+  const u2 = Number(snap2.used) || 0; // Used space on B (TB)
+  if (u1 <= 0) return null; // Can't divide by zero
+  const pct = (u2 / u1) * 100;
+  if (!Number.isFinite(pct) || pct < 0) return null;
   return pct;
 }
 
-export function calculateETA(startTime, currentTime, effectivePercent) {
-  const start = fromLocalDateTimeValue(startTime);
-  const curr = fromLocalDateTimeValue(currentTime);
-  const p = Number(effectivePercent) / 100;
+// Calculate transfer speed from snapshot history
+export function calculateTransferSpeed(snapshotHistory, snapshotName = "B") {
+  if (!snapshotHistory || snapshotHistory.length < 2) {
+    return null; // Need at least 2 data points
+  }
 
-  if (!start || !curr || !(p > 0 && p <= 1)) return null;
+  // Filter history for the specific snapshot (usually B for destination)
+  const relevantHistory = snapshotHistory
+    .filter((h) => h.snapshotName === snapshotName)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-  const elapsedMs = curr.getTime() - start.getTime();
-  if (elapsedMs <= 0) return null;
+  if (relevantHistory.length < 2) {
+    return null;
+  }
 
-  const totalMs = elapsedMs / p;
-  const remainingMs = totalMs - elapsedMs;
+  // Get the last two entries to calculate speed
+  const latest = relevantHistory[relevantHistory.length - 1];
+  const previous = relevantHistory[relevantHistory.length - 2];
 
-  return new Date(curr.getTime() + remainingMs);
-}
+  const dataTransferred = latest.used - previous.used; // TB
+  const timeElapsed = new Date(latest.createdAt) - new Date(previous.createdAt); // milliseconds
 
-export function calculateRemainingTime(eta, currentTime) {
-  if (!eta) return "—";
-  const curr = fromLocalDateTimeValue(currentTime);
-  const ms = eta.getTime() - curr.getTime();
-  if (!Number.isFinite(ms) || ms < 0) return "—";
-  const hours = Math.floor(ms / 3_600_000);
-  const minutes = Math.round((ms % 3_600_000) / 60_000);
-  return `${hours}h ${minutes}m`;
-}
+  if (timeElapsed <= 0 || dataTransferred <= 0) {
+    return null;
+  }
 
-export function calculateElapsedTime(startTime, currentTime) {
-  const start = fromLocalDateTimeValue(startTime);
-  const curr = fromLocalDateTimeValue(currentTime);
-  if (!start || !curr) return "—";
-  const ms = Math.max(0, curr.getTime() - start.getTime());
-  const h = Math.floor(ms / 3_600_000);
-  const m = Math.round((ms % 3_600_000) / 60_000);
-  return `${h}h ${m}m`;
-}
+  // Convert to TB/hour
+  const hoursElapsed = timeElapsed / (1000 * 60 * 60);
+  const speedTBPerHour = dataTransferred / hoursElapsed;
 
-export function getEffectivePercent(percentManual, pctFromSnapshots) {
-  const m = Number(percentManual);
-  if (Number.isFinite(m) && m > 0 && m <= 100) return m;
-  return pctFromSnapshots ?? 0;
-}
-
-export function formatPercentDisplay(effectivePercent) {
-  const v = Number(effectivePercent);
-  return Number.isFinite(v) && v > 0 ? `${v.toFixed(2)}%` : "—";
+  return {
+    speed: speedTBPerHour,
+    unit: "TB/hour",
+    dataTransferred,
+    timeElapsed: hoursElapsed,
+  };
 }
