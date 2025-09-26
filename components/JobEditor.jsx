@@ -116,7 +116,7 @@ export function JobEditor({ jobs, onAdd, onRemove }) {
           ))
         )}
       </div>
-      
+
       {/* PIN Verification Modal */}
       <PinVerification
         isOpen={showPinModal}

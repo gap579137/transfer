@@ -41,7 +41,7 @@ export default function PinVerification({
     }
 
     // Auto-verify when all digits are entered
-    if (value && index === 3 && newPin.every(digit => digit !== "")) {
+    if (value && index === 3 && newPin.every((digit) => digit !== "")) {
       verifyPin(newPin.join(""));
     }
   };
@@ -51,9 +51,9 @@ export default function PinVerification({
     if (e.key === "Backspace" && !pin[index] && index > 0) {
       inputRefs[index - 1].current?.focus();
     }
-    
+
     // Handle Enter to verify pin
-    if (e.key === "Enter" && pin.every(digit => digit !== "")) {
+    if (e.key === "Enter" && pin.every((digit) => digit !== "")) {
       verifyPin(pin.join(""));
     }
   };
@@ -65,9 +65,9 @@ export default function PinVerification({
     try {
       // Simple PIN verification - in production, you'd want this server-side
       const correctPin = process.env.NEXT_PUBLIC_APP_PIN || "1234"; // Default for demo
-      
+
       // Add a small delay to prevent brute force attempts
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (pinValue === correctPin) {
         onVerified();
@@ -173,7 +173,7 @@ export default function PinVerification({
               type="button"
               onClick={() => verifyPin(pin.join(""))}
               className="px-4 py-2 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
-              disabled={isVerifying || pin.some(digit => digit === "")}
+              disabled={isVerifying || pin.some((digit) => digit === "")}
             >
               {isVerifying ? "Verifying..." : "Verify"}
             </button>

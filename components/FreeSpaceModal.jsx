@@ -21,7 +21,7 @@ export default function FreeSpaceModal({
     if (!Number.isNaN(newFree) && newFree >= 0 && newFree <= totalSpace) {
       const newUsed = totalSpace - newFree;
       const updateData = { free: newFree, used: newUsed };
-      
+
       // Store the update data and show PIN modal
       setPendingUpdate(updateData);
       setShowPinModal(true);
@@ -117,7 +117,7 @@ export default function FreeSpaceModal({
           </div>
         </form>
       </div>
-      
+
       {/* PIN Verification Modal */}
       <PinVerification
         isOpen={showPinModal}
