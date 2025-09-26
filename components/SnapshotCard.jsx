@@ -24,10 +24,7 @@ export function SnapshotCard({
 
   return (
     <>
-      <Card
-        title={title}
-        className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
-      >
+      <Card title={title}>
         <NumberRow label="Total" value={snapshot.total} readOnly={true} />
         <NumberRow label="Free" value={snapshot.free} readOnly={true} />
         <NumberRow
@@ -41,7 +38,7 @@ export function SnapshotCard({
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="w-full rounded-xl border px-4 py-2 shadow hover:bg-gray-50 transition-colors text-sm"
+              className="w-full rounded-xl border px-4 py-2 shadow hover:bg-gray-50 transition-colors text-sm text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
               disabled={isUpdating}
             >
               {isUpdating ? "Updating..." : "Update Free Space"}

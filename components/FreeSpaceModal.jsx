@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PinVerification from "./PinVerification.jsx";
 
 export default function FreeSpaceModal({
   isOpen,
@@ -11,15 +12,33 @@ export default function FreeSpaceModal({
   isLoading,
 }) {
   const [freeSpace, setFreeSpace] = useState(currentFree?.toString() || "");
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newFree = Number.parseFloat(freeSpace);
     if (!Number.isNaN(newFree) && newFree >= 0 && newFree <= totalSpace) {
       const newUsed = totalSpace - newFree;
-      await onUpdate({ free: newFree, used: newUsed });
+      const updateData = { free: newFree, used: newUsed };
+      
+      // Store the update data and show PIN modal
+      setPendingUpdate(updateData);
+      setShowPinModal(true);
+    }
+  };
+
+  const handlePinVerified = async () => {
+    if (pendingUpdate) {
+      await onUpdate(pendingUpdate);
+      setPendingUpdate(null);
       onClose();
     }
+  };
+
+  const handlePinModalClose = () => {
+    setShowPinModal(false);
+    setPendingUpdate(null);
   };
 
   const handleClose = () => {
@@ -98,6 +117,15 @@ export default function FreeSpaceModal({
           </div>
         </form>
       </div>
+      
+      {/* PIN Verification Modal */}
+      <PinVerification
+        isOpen={showPinModal}
+        onClose={handlePinModalClose}
+        onVerified={handlePinVerified}
+        title="PIN Required"
+        message="Please enter your PIN to update free space:"
+      />
     </div>
   );
 }

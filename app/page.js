@@ -110,6 +110,8 @@ export default function App() {
     );
   }
 
+  console.log("Transfer History:", snapshotHistory);
+
   return (
     <div className="min-h-screen w-full">
       <div className="mx-auto max-w-5xl p-6">
@@ -118,7 +120,7 @@ export default function App() {
             Transfer Progress
           </h1>
           <div className="text-sm opacity-75">
-            Last updated: {fmtDate(lastUpdated)}
+            Last updated: {fmtDate(snapshotHistory[0]?.createdAt) || "—"}
           </div>
         </header>
 

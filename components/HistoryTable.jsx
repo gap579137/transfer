@@ -26,7 +26,7 @@ export function HistoryTable({ snapshotHistory }) {
             <tr key={entry.id} className="border-b hover:bg-gray-50">
               <td className="p-2">{fmtDate(entry.createdAt)}</td>
               <td className="p-2">
-                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm  border border-blue-400">
                   {entry.snapshotName}
                 </span>
               </td>

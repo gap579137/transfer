@@ -3,5 +3,6 @@ export { default as FreeSpaceModal } from "./FreeSpaceModal.jsx";
 export { HistoryTable } from "./HistoryTable.jsx";
 export { JobEditor } from "./JobEditor.jsx";
 export { NumberRow } from "./NumberRow.jsx";
+export { default as PinVerification } from "./PinVerification.jsx";
 export { SnapshotCard } from "./SnapshotCard.jsx";
 export { Stat } from "./Stat.jsx";

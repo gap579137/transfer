@@ -1,25 +1,43 @@
 "use client";
 
 import { useState } from "react";
+import PinVerification from "./PinVerification.jsx";
 
 export function JobEditor({ jobs, onAdd, onRemove }) {
   const [name, setName] = useState("");
   const [time, setTime] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pendingJobData, setPendingJobData] = useState(null);
 
   const add = async () => {
     if (!name.trim() || isLoading) return;
 
-    setIsLoading(true);
-    try {
-      await onAdd({ name: name.trim(), startTime: time.trim() });
-      setName("");
-      setTime("");
-    } catch (error) {
-      console.error("Failed to add job:", error);
-    } finally {
-      setIsLoading(false);
+    // Store job data and show PIN modal instead of directly adding
+    const jobData = { name: name.trim(), startTime: time.trim() };
+    setPendingJobData(jobData);
+    setShowPinModal(true);
+  };
+
+  const handlePinVerified = async () => {
+    if (pendingJobData) {
+      setIsLoading(true);
+      try {
+        await onAdd(pendingJobData);
+        setName("");
+        setTime("");
+        setPendingJobData(null);
+      } catch (error) {
+        console.error("Failed to add job:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
+  };
+
+  const handlePinModalClose = () => {
+    setShowPinModal(false);
+    setPendingJobData(null);
   };
 
   const remove = async (jobId) => {
@@ -62,7 +80,7 @@ export function JobEditor({ jobs, onAdd, onRemove }) {
         />
         <button
           type="button"
-          className="rounded-xl border px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl border px-4 py-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
           onClick={add}
           disabled={isLoading}
         >
@@ -98,6 +116,15 @@ export function JobEditor({ jobs, onAdd, onRemove }) {
           ))
         )}
       </div>
+      
+      {/* PIN Verification Modal */}
+      <PinVerification
+        isOpen={showPinModal}
+        onClose={handlePinModalClose}
+        onVerified={handlePinVerified}
+        title="PIN Required"
+        message="Please enter your PIN to add a job:"
+      />
     </div>
   );
 }
